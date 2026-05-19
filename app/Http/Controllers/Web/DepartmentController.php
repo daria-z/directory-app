@@ -32,6 +32,12 @@ class DepartmentController extends Controller
             ->with('success', 'Отдел создан');
     }
 
+    public function show(Department $department)
+    {
+        $department->load('employees');
+        return view('departments.show', compact('department'));
+    }
+
     public function edit(Department $department)
     {
         return view('departments.edit', compact('department'));

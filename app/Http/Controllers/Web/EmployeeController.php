@@ -41,8 +41,14 @@ class EmployeeController extends Controller
             $employee->departments()->attach($validated['department_ids']);
         }
 
-        return redirect()->route('employees.index')
+        return redirect()->route('web.employees.index')
             ->with('success', 'Сотрудник создан');
+    }
+
+    public function show(Employee $employee)
+    {
+        $employee->load('departments');
+        return view('employees.show', compact('employee'));
     }
 
     public function edit(Employee $employee)
@@ -77,7 +83,7 @@ class EmployeeController extends Controller
     {
         $employee->delete();
 
-        return redirect()->route('employees.index')
+        return redirect()->route('web.employees.index')
             ->with('success', 'Сотрудник удалён');
     }
 }
