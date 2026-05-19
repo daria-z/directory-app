@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Department;
 
+use App\Models\Department;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
@@ -10,9 +10,12 @@ class DepartmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Department::with('employees')->get();
+        $perPage = $request->query('per_page', 15);
+        $perPage = min($perPage, 100);
+
+        return Department::with('employees')->paginate($perPage);
     }
 
     /**
@@ -59,6 +62,7 @@ class DepartmentController extends Controller
     public function destroy(Department $department)
     {
         $department->delete();
+
         return response()->json(null, 204);
     }
 }

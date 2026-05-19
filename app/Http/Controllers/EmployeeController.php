@@ -10,9 +10,12 @@ class EmployeeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Employee::with('departments')->get();
+        $perPage = $request->query('per_page', 15);
+        $perPage = min($perPage, 100);
+
+        return Employee::with('departments')->paginate($perPage);
     }
 
     /**
@@ -35,7 +38,7 @@ class EmployeeController extends Controller
 
         $employee = Employee::create($validated);
 
-        if (!empty($validated['department_ids'])) {
+        if (! empty($validated['department_ids'])) {
             $employee->departments()->attach($validated['department_ids']);
         }
 
@@ -60,8 +63,8 @@ class EmployeeController extends Controller
             'last_name' => 'sometimes|string|max:255',
             'birthday' => 'sometimes|date',
             'gender' => 'sometimes|in:male,female',
-            'phone' => 'sometimes|string|unique:employees,phone,' . $employee->id,
-            'email' => 'sometimes|email|unique:employees,email,' . $employee->id,
+            'phone' => 'sometimes|string|unique:employees,phone,'.$employee->id,
+            'email' => 'sometimes|email|unique:employees,email,'.$employee->id,
             'position' => 'sometimes|string|max:255',
             'image_path' => 'nullable|string',
             'department_ids' => 'nullable|array',
@@ -83,6 +86,7 @@ class EmployeeController extends Controller
     public function destroy(Employee $employee)
     {
         $employee->delete();
+
         return response()->json(null, 204);
     }
 }
