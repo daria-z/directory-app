@@ -12,10 +12,7 @@ class DepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 15);
-        $perPage = min($perPage, 100);
-
-        return Department::with('employees')->paginate($perPage);
+        return Department::with('employees')->paginate($this->getPerPage($request));
     }
 
     /**
@@ -36,9 +33,9 @@ class DepartmentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Department $department)
     {
-        return Department::with('employees')->findOrFail($id);
+        return $department->load('employees');
     }
 
     /**
@@ -47,8 +44,8 @@ class DepartmentController extends Controller
     public function update(Request $request, Department $department)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|nullable|string',
         ]);
 
         $department->update($validated);

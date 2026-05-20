@@ -12,10 +12,7 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 15);
-        $perPage = min($perPage, 100);
-
-        return Employee::with('departments')->paginate($perPage);
+        return Employee::with('departments')->paginate($this->getPerPage($request));
     }
 
     /**
@@ -48,9 +45,9 @@ class EmployeeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Employee $employee)
     {
-        return Employee::with('departments')->findOrFail($id);
+        return $employee->load('departments');
     }
 
     /**
