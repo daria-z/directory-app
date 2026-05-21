@@ -119,4 +119,15 @@ class DepartmentApiTest extends TestCase
 
         $this->assertDatabaseMissing('departments', ['id' => $department->id]);
     }
+
+    public function test_update_rejects_empty_name(): void
+    {
+        $user = User::factory()->create();
+        $department = Department::factory()->create(['name' => 'Original Name']);
+
+        $this->actingAs($user)
+            ->patchJson("/api/departments/{$department->id}", ['name' => ''])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
 }

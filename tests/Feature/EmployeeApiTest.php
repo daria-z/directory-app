@@ -161,4 +161,71 @@ class EmployeeApiTest extends TestCase
 
         $this->assertDatabaseMissing('employees', ['id' => $employee->id]);
     }
+
+    public function test_update_allows_keeping_same_email_and_phone(): void
+    {
+        $user = User::factory()->create();
+        $employee = Employee::factory()->create([
+            'email' => 'original@example.com',
+            'phone' => '+7 900 123-45-67',
+        ]);
+
+        $this->actingAs($user)
+            ->patchJson("/api/employees/{$employee->id}", [
+                'email' => 'original@example.com',
+                'phone' => '+7 900 123-45-67',
+            ])
+            ->assertStatus(200);
+    }
+
+    public function test_store_validates_gender_enum(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/employees', $this->employeeData(['gender' => 'other']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['gender']);
+    }
+
+    public function test_store_validates_email_format(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/employees', $this->employeeData(['email' => 'not-an-email']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_store_validates_birthday_is_date(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/employees', $this->employeeData(['birthday' => 'not-a-date']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['birthday']);
+    }
+
+    public function test_store_validates_unique_phone(): void
+    {
+        $user = User::factory()->create();
+        Employee::factory()->create(['phone' => '+7 900 999-88-77']);
+
+        $this->actingAs($user)
+            ->postJson('/api/employees', $this->employeeData(['phone' => '+7 900 999-88-77']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['phone']);
+    }
+
+    public function test_store_validates_department_ids_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/employees', $this->employeeData(['department_ids' => [9999]]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['department_ids.0']);
+    }
 }
